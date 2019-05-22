@@ -107,4 +107,19 @@ class User extends Client {
 			return false;
 		}
 	}
+
+  public function create_user_token($user_id) {
+
+    $param = array('userId' => $user_id);
+
+    $response = Request::post( $this->api . 'users.createToken')->body($param)->send();
+
+    if( $response->code == 200 && isset($response->body->data->authToken) ) {
+      return $response->body->data;
+    } else {
+      echo( $response->raw_body->error . "\n" );
+      return false;
+    }
+  }
+
 }

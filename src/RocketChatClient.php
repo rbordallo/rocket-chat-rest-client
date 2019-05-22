@@ -95,4 +95,47 @@ class Client{
 		}
 	}
 
+  /**
+   * List the channels the caller has access to.
+   */
+  public function list_rooms($user_id, $user_auth_token) {
+
+    // query parameter
+    // updatedSince=2018-01-26T00:11:22.345Z
+
+    $headers = ['X-Auth-Token' => $user_auth_token, 'X-User-Id' => $user_id];
+    $response = Request::get( $this->api . 'rooms.get' )->addHeaders($headers)->send();
+
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      $chats = array();
+      foreach($response->body->update as $room){
+        $chats[] = new LiveChat($room, $user_id);
+      }
+      return $chats;
+    } else {
+      echo( $response->body->error . "\n" );
+      return false;
+    }
+  }
+
+
+  /**
+   * List all livechat users
+   * @return array
+   */
+  public function list_user_managers($type = TYPE_AGENT)
+  {
+    $response = Request::get($this->api . 'livechat/users/'.$type)->send();
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      $list = array();
+      foreach($response->body->users as $livechatUserData){
+        $list[] = $livechatUserData;
+      }
+      return $list;
+    } else {
+      $this->lastError = $response->body->error;
+      return false;
+    }
+  }
+
 }

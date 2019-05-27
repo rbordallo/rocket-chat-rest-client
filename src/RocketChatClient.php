@@ -98,13 +98,14 @@ class Client{
   /**
    * List the channels the caller has access to.
    */
-  public function list_rooms($user_id, $user_auth_token) {
+  public function list_rooms($user_id, $user_auth_token, $updatedSince = NULL) {
 
-    // query parameter
-    // updatedSince=2018-01-26T00:11:22.345Z
+    if ($updatedSince != NULL ) {
+      $updatedSince = "?updatedSince=" .  $updatedSince;
+    }
 
     $headers = ['X-Auth-Token' => $user_auth_token, 'X-User-Id' => $user_id];
-    $response = Request::get( $this->api . 'rooms.get' )->addHeaders($headers)->send();
+    $response = Request::get( $this->api . 'rooms.get' . $updatedSince )->addHeaders($headers)->send();
 
     if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
       $chats = array();

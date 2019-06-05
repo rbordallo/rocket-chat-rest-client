@@ -15,6 +15,8 @@ class LiveChat extends Client {
   public $visitor_token;
   public $visitor_status;
   public $room_update;
+  public $topic;
+  public $department;
   public $messages;
 
   public function __construct($room, $agent){
@@ -29,6 +31,10 @@ class LiveChat extends Client {
       $this->visitor_status = $room->v->status;
       $this->room_update = $room->_updatedAt;
       $this->messages = [];
+      if ($room->lastMessage->t == 'livechat-close') {
+        $this->topic = $room->lastMessage->msg;
+      }
+      $this->department = $room->departmentId;
     }
   }
 
@@ -49,7 +55,20 @@ class LiveChat extends Client {
       if ($response->code == 200 && isset($response->body->success) && $response->body->success == TRUE) {
         foreach ($response->body->messages as $message) {
           $message_name = isset($message->alias) ? $message->alias : $message->u->username;
-          $messages[] = ["message_name" => $message_name, "message_msg" => $message->msg, "message_time" => $message->ts];
+          if (isset($message->attachments)) {
+            $messages[] = [
+              "message_name" => $message_name,
+              "message_msg" => $message->attachments[0]->title . ' - ' . $message->attachments[0]->description . ' - ' . variable_get('rocketchat_api_endpoint') . $message->attachments[0]->title_link,
+              "message_time" => $message->ts
+            ];
+          }
+          else {
+            $messages[] = [
+              "message_name" => $message_name,
+              "message_msg" => $message->msg,
+              "message_time" => $message->ts
+            ];
+          }
         }
       }
 
@@ -58,6 +77,17 @@ class LiveChat extends Client {
 
     return $ordered_messages;
 
+  }
+
+  public function get_department() {
+    $response = Request::get( $this->api . 'livechat/department/' . $this->department )->send();
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      $department = $response->body->department;
+      return $department;
+    } else {
+      $this->lastError = $response->body->error;
+      return false;
+    }
   }
 
 }

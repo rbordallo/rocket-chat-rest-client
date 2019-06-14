@@ -139,4 +139,18 @@ class Client{
     }
   }
 
+  public function register_visitor($visitor) {
+    $response = Request::post( $this->api . 'livechat/visitor' )
+      ->body(array('visitor' => array('name' => $visitor['name'], 'email' => $visitor['email'], 'token' => $visitor['token'], 'department' => $visitor['department'] )))
+      ->send();
+
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      return true;
+    } else {
+      echo( $response->body->message . "\n" );
+      return false;
+    }
+  }
+
+
 }

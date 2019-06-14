@@ -10,14 +10,17 @@ class LiveChat extends Client {
   public $id;
   public $fname;
   public $agent;
+  public $agent_mail;
   public $visitor_id;
   public $visitor_username;
   public $visitor_token;
   public $visitor_status;
+  // public $visitor_mail;
   public $room_update;
   public $topic;
   public $department;
   public $messages;
+  public $status;
 
   public function __construct($room, $agent){
     parent::__construct();
@@ -28,11 +31,18 @@ class LiveChat extends Client {
       $this->visitor_id = $room->v->_id;
       $this->visitor_username = $room->v->username;
       $this->visitor_token = $room->v->token;
+      // $this->visitor_mail = $room->v->mail;
       $this->visitor_status = $room->v->status;
       $this->room_update = $room->_updatedAt;
       $this->messages = [];
       if ($room->lastMessage->t == 'livechat-close') {
         $this->topic = $room->lastMessage->msg;
+      }
+      if (isset($room->open) && $room->open == true) {
+        $this->status = 'open';
+      }
+      else {
+        $this->status = 'closed';
       }
       $this->department = $room->departmentId;
     }
@@ -86,6 +96,23 @@ class LiveChat extends Client {
       return $department;
     } else {
       $this->lastError = $response->body->error;
+      return false;
+    }
+  }
+
+  /**
+   * Gets a user’s information, limited to the caller’s permissions.
+   */
+  public function get_agent_mail() {
+    $response = Request::get( $this->api . 'users.info?userId=' . $this->agent )->send();
+
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      // $this->id = $response->body->user->_id;
+      // $this->nickname = $response->body->user->name;
+      // $this->agent_email = $response->body->user->emails[0]->address;
+      return $response->body->user->emails[0]->address;
+    } else {
+      echo( $response->body->error . "\n" );
       return false;
     }
   }

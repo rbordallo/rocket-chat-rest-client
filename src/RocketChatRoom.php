@@ -38,4 +38,29 @@ class Room extends Client {
 		}
 	}
 
+	function create_room ($visitor_token) {
+    $response = Request::get( $this->api . 'livechat/room	?token=' . $visitor_token )->send();
+
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      return $response->body->room->_id;
+    } else {
+      echo( $response->body->message . "\n" );
+      return false;
+    }
+  }
+
+  public function send_message($visitor_token, $room_id, $message) {
+    $response = Request::post( $this->api . 'livechat/message' )
+      ->body(array('token' => $visitor_token, 'rid' => $room_id, 'msg' => $message ))
+      ->send();
+
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      return true;
+    } else {
+      echo( $response->body->message . "\n" );
+      return false;
+    }
+  }
+
+
 }

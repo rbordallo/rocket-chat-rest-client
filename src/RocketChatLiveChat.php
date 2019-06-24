@@ -89,6 +89,17 @@ class LiveChat extends Client {
 
   }
 
+  public function get_all_departments() {
+    $response = Request::get( $this->api . 'livechat/department/' )->send();
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      $departments = $response->body->departments;
+      return $departments;
+    } else {
+      $this->lastError = $response->body->error;
+      return false;
+    }
+  }
+
   public function get_department() {
     $response = Request::get( $this->api . 'livechat/department/' . $this->department )->send();
     if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {

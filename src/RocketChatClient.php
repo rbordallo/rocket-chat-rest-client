@@ -152,5 +152,27 @@ class Client{
     }
   }
 
+  public function get_department_agents($department) {
+    $response = Request::get( $this->api . 'livechat/department/' . $department->_id )->send();
+    if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+      $agents = $response->body->agents;
+      return $agents;
+    } else {
+      $this->lastError = $response->body->error;
+      return false;
+    }
+  }
+
+  public function get_presence($user_id) {
+
+    $response = Request::get( $this->api . 'users.getPresence?userId=' . $user_id)->send();
+
+    if( $response->code == 200 && isset($response->body->presence) ) {
+      return $response->body->presence;
+    } else {
+      echo( $response->raw_body->error . "\n" );
+      return false;
+    }
+  }
 
 }
